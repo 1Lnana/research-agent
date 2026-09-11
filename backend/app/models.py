@@ -74,6 +74,7 @@ class UsersPublic(SQLModel):
 class ItemBase(SQLModel):
     title: str = Field(min_length=1, max_length=255)
     description: str | None = Field(default=None, max_length=255)
+    category: str | None = Field(default=None, max_length=255)
 
 
 # Properties to receive on item creation
@@ -85,7 +86,7 @@ class ItemCreate(ItemBase):
 class ItemUpdate(SQLModel):
     title: str | None = Field(default=None, min_length=1, max_length=255)
     description: str | None = Field(default=None, max_length=255)
-
+    category: str | None = Field(default=None, max_length=255)
 
 # Database model, database table inferred from class name
 class Item(ItemBase, table=True):

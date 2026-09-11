@@ -56,6 +56,10 @@ export type ItemCreate = {
      * Description
      */
     description?: string | null;
+    /**
+     * Category
+     */
+    category?: string | null;
 };
 
 /**
@@ -70,6 +74,10 @@ export type ItemPublic = {
      * Description
      */
     description?: string | null;
+    /**
+     * Category
+     */
+    category?: string | null;
     /**
      * Id
      */
@@ -96,6 +104,10 @@ export type ItemUpdate = {
      * Description
      */
     description?: string | null;
+    /**
+     * Category
+     */
+    category?: string | null;
 };
 
 /**

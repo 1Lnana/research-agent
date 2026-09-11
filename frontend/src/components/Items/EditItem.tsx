@@ -33,6 +33,7 @@ import { handleError } from "@/utils"
 const formSchema = z.object({
   title: z.string().min(1, { message: "Title is required" }),
   description: z.string().optional(),
+  category: z.string().max(255).optional(),
 })
 
 type FormData = z.infer<typeof formSchema>
@@ -54,6 +55,7 @@ const EditItem = ({ item, onSuccess }: EditItemProps) => {
     defaultValues: {
       title: item.title,
       description: item.description ?? undefined,
+      category: item.category ?? undefined, 
     },
   })
 
@@ -118,6 +120,19 @@ const EditItem = ({ item, onSuccess }: EditItemProps) => {
                     <FormLabel>Description</FormLabel>
                     <FormControl>
                       <Input placeholder="Description" type="text" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Category</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Category" type="text" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
