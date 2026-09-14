@@ -5,6 +5,16 @@ export type ClientOptions = {
 };
 
 /**
+ * Body_documents-upload_document
+ */
+export type Body_documents_upload_document = {
+    /**
+     * File
+     */
+    file: Blob | File;
+};
+
+/**
  * Body_login-login_access_token
  */
 export type Body_login_login_access_token = {
@@ -32,6 +42,54 @@ export type Body_login_login_access_token = {
      * Client Secret
      */
     client_secret?: string | null;
+};
+
+/**
+ * DocumentPublic
+ */
+export type DocumentPublic = {
+    /**
+     * File Name
+     */
+    file_name: string;
+    /**
+     * File Type
+     */
+    file_type: string;
+    /**
+     * File Size
+     */
+    file_size: number;
+    /**
+     * Status
+     */
+    status?: string;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Owner Id
+     */
+    owner_id: string;
+    /**
+     * Created At
+     */
+    created_at?: string | null;
+};
+
+/**
+ * DocumentsPublic
+ */
+export type DocumentsPublic = {
+    /**
+     * Data
+     */
+    data: Array<DocumentPublic>;
+    /**
+     * Count
+     */
+    count: number;
 };
 
 /**
@@ -932,6 +990,65 @@ export type itemsUpdateItemResponses = {
 };
 
 export type itemsUpdateItemResponse = itemsUpdateItemResponses[keyof itemsUpdateItemResponses];
+
+export type documentsReadDocumentsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Skip
+         */
+        skip?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/documents/';
+};
+
+export type documentsReadDocumentsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type documentsReadDocumentsError = documentsReadDocumentsErrors[keyof documentsReadDocumentsErrors];
+
+export type documentsReadDocumentsResponses = {
+    /**
+     * Successful Response
+     */
+    200: DocumentsPublic;
+};
+
+export type documentsReadDocumentsResponse = documentsReadDocumentsResponses[keyof documentsReadDocumentsResponses];
+
+export type documentsUploadDocumentData = {
+    body: Body_documents_upload_document;
+    path?: never;
+    query?: never;
+    url: '/api/v1/documents/';
+};
+
+export type documentsUploadDocumentErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type documentsUploadDocumentError = documentsUploadDocumentErrors[keyof documentsUploadDocumentErrors];
+
+export type documentsUploadDocumentResponses = {
+    /**
+     * Successful Response
+     */
+    200: DocumentPublic;
+};
+
+export type documentsUploadDocumentResponse = documentsUploadDocumentResponses[keyof documentsUploadDocumentResponses];
 
 export type privateCreateUserData = {
     body: PrivateUserCreate;

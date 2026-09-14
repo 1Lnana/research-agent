@@ -57,6 +57,7 @@ class User(UserBase, table=True):
         sa_type=DateTime(timezone=True),  # type: ignore
     )
     items: list[Item] = Relationship(back_populates="owner", cascade_delete=True)
+    documents: list[Document] = Relationship(back_populates="owner", cascade_delete=True)
 
 
 # Properties to return via API, id is always required
@@ -111,7 +112,39 @@ class ItemPublic(ItemBase):
 class ItemsPublic(SQLModel):
     data: list[ItemPublic]
     count: int
+    
+# Shared properties
+class DocumentBase(SQLModel):
+    file_name: str = Field(min_length=1, max_length=255)
+    file_type: str = Field(min_length=1, max_length=100)
+    file_size: int = Field(ge=0)
+    status: str = Field(default="uploaded", max_length=50)
 
+
+# Database model, database table inferred from class name
+class Document(DocumentBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    storage_path: str = Field(min_length=1, max_length=500)
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=DateTime(timezone=True),  # type: ignore
+    )
+    owner_id: uuid.UUID = Field(
+        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+    )
+    owner: User | None = Relationship(back_populates="documents")
+
+
+# Properties to return via API, id is always required
+class DocumentPublic(DocumentBase):
+    id: uuid.UUID
+    owner_id: uuid.UUID
+    created_at: datetime | None = None
+
+
+class DocumentsPublic(SQLModel):
+    data: list[DocumentPublic]
+    count: int
 
 # Generic message
 class Message(SQLModel):
