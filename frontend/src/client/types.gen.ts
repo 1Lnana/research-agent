@@ -45,6 +45,28 @@ export type Body_login_login_access_token = {
 };
 
 /**
+ * DocumentChunkPublic
+ */
+export type DocumentChunkPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Document Id
+     */
+    document_id: string;
+    /**
+     * Chunk Index
+     */
+    chunk_index: number;
+    /**
+     * Content
+     */
+    content: string;
+};
+
+/**
  * DocumentPublic
  */
 export type DocumentPublic = {
@@ -1049,6 +1071,68 @@ export type documentsUploadDocumentResponses = {
 };
 
 export type documentsUploadDocumentResponse = documentsUploadDocumentResponses[keyof documentsUploadDocumentResponses];
+
+export type documentsReadDocumentChunksData = {
+    body?: never;
+    path: {
+        /**
+         * Id
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/documents/{id}/chunks';
+};
+
+export type documentsReadDocumentChunksErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type documentsReadDocumentChunksError = documentsReadDocumentChunksErrors[keyof documentsReadDocumentChunksErrors];
+
+export type documentsReadDocumentChunksResponses = {
+    /**
+     * Response Documents-Read Document Chunks
+     *
+     * Successful Response
+     */
+    200: Array<DocumentChunkPublic>;
+};
+
+export type documentsReadDocumentChunksResponse = documentsReadDocumentChunksResponses[keyof documentsReadDocumentChunksResponses];
+
+export type documentsProcessDocumentData = {
+    body?: never;
+    path: {
+        /**
+         * Id
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/documents/{id}/process';
+};
+
+export type documentsProcessDocumentErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type documentsProcessDocumentError = documentsProcessDocumentErrors[keyof documentsProcessDocumentErrors];
+
+export type documentsProcessDocumentResponses = {
+    /**
+     * Successful Response
+     */
+    200: DocumentPublic;
+};
+
+export type documentsProcessDocumentResponse = documentsProcessDocumentResponses[keyof documentsProcessDocumentResponses];
 
 export type privateCreateUserData = {
     body: PrivateUserCreate;

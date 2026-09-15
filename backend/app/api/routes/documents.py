@@ -6,7 +6,14 @@ from fastapi import APIRouter, HTTPException, UploadFile
 from sqlmodel import col, select
 
 from app.api.deps import CurrentUser, SessionDep
-from app.models import Document, DocumentPublic, DocumentsPublic
+from app.models import (
+    Document,
+    DocumentChunk,
+    DocumentChunkPublic,
+    DocumentPublic,
+    DocumentsPublic,
+)
+
 
 router = APIRouter(prefix="/documents", tags=["documents"])
 
@@ -19,6 +26,13 @@ MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
 BACKEND_DIR = Path(__file__).resolve().parents[3]
 UPLOADS_DIR = BACKEND_DIR / "uploads"
 
+def split_text(content: str, chunk_size: int = 500) -> list[str]:
+    text = content.strip()
+    return [
+        text[start : start + chunk_size]
+        for start in range(0, len(text), chunk_size)
+        if text[start : start + chunk_size].strip()
+    ]
 
 @router.get("/", response_model=DocumentsPublic)
 def read_documents(
@@ -40,6 +54,27 @@ def read_documents(
     ]
     return DocumentsPublic(data=documents_public, count=len(documents_public))
 
+@router.get("/{id}/chunks", response_model=list[DocumentChunkPublic])
+def read_document_chunks(
+    session: SessionDep, current_user: CurrentUser, id: uuid.UUID
+) -> Any:
+    """
+    Retrieve the chunks created from one document.
+    """
+    document = session.get(Document, id)
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    if document.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    statement = (
+        select(DocumentChunk)
+        .where(DocumentChunk.document_id == document.id)
+        .order_by(col(DocumentChunk.chunk_index))
+    )
+    chunks = session.exec(statement).all()
+    return [DocumentChunkPublic.model_validate(chunk) for chunk in chunks]
 
 @router.post("/", response_model=DocumentPublic)
 async def upload_document(
@@ -73,6 +108,56 @@ async def upload_document(
         storage_path=str(relative_path),
         owner_id=current_user.id,
     )
+    session.add(document)
+    session.commit()
+    session.refresh(document)
+    return document
+
+@router.post("/{id}/process", response_model=DocumentPublic)
+def process_document(
+    session: SessionDep, current_user: CurrentUser, id: uuid.UUID
+) -> Any:
+    """
+    Read a text document and save its chunks.
+    """
+    document = session.get(Document, id)
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    if document.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    if document.file_type not in {"text/plain", "text/markdown"}:
+        raise HTTPException(
+            status_code=400,
+            detail="Only TXT and Markdown processing is available now",
+        )
+
+    file_path = BACKEND_DIR / document.storage_path
+    if not file_path.is_file():
+        raise HTTPException(status_code=404, detail="Stored file not found")
+
+    content = file_path.read_text(encoding="utf-8")
+    chunks = split_text(content)
+    if not chunks:
+        raise HTTPException(status_code=400, detail="Document is empty")
+
+    existing_chunks = session.exec(
+        select(DocumentChunk).where(DocumentChunk.document_id == document.id)
+    ).all()
+    for chunk in existing_chunks:
+        session.delete(chunk)
+
+    for index, chunk_content in enumerate(chunks):
+        session.add(
+            DocumentChunk(
+                document_id=document.id,
+                chunk_index=index,
+                content=chunk_content,
+            )
+        )
+
+    document.status = "ready"
     session.add(document)
     session.commit()
     session.refresh(document)

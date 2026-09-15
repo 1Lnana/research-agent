@@ -1,4 +1,5 @@
 import UploadDocument from "@/components/Documents/UploadDocument"
+import ProcessDocument from "@/components/Documents/ProcessDocument"
 import { useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { FileText } from "lucide-react"
@@ -46,6 +47,7 @@ function DocumentsListContent() {
               {document.file_type} · {document.status}
             </p>
           </div>
+          <ProcessDocument document={document} />
         </div>
       ))}
     </div>

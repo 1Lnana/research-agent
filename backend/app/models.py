@@ -2,7 +2,7 @@ import uuid
 from datetime import UTC, datetime
 
 from pydantic import EmailStr
-from sqlalchemy import DateTime
+from sqlalchemy import DateTime, Text
 from sqlmodel import Field, Relationship, SQLModel
 
 
@@ -133,6 +133,9 @@ class Document(DocumentBase, table=True):
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
     )
     owner: User | None = Relationship(back_populates="documents")
+    chunks: list[DocumentChunk] = Relationship(
+    back_populates="document", cascade_delete=True
+)
 
 
 # Properties to return via API, id is always required
@@ -145,6 +148,21 @@ class DocumentPublic(DocumentBase):
 class DocumentsPublic(SQLModel):
     data: list[DocumentPublic]
     count: int
+
+class DocumentChunk(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    document_id: uuid.UUID = Field(
+        foreign_key="document.id", nullable=False, ondelete="CASCADE"
+    )
+    chunk_index: int = Field(ge=0)
+    content: str = Field(sa_type=Text)
+    document: Document | None = Relationship(back_populates="chunks")
+
+class DocumentChunkPublic(SQLModel):
+    id: uuid.UUID
+    document_id: uuid.UUID
+    chunk_index: int
+    content: str    
 
 # Generic message
 class Message(SQLModel):
