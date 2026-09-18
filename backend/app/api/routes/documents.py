@@ -1,4 +1,4 @@
-import uuid
+﻿import uuid
 from pathlib import Path
 from typing import Any
 
@@ -13,7 +13,7 @@ from app.models import (
     DocumentPublic,
     DocumentsPublic,
 )
-
+from pypdf import PdfReader
 
 router = APIRouter(prefix="/documents", tags=["documents"])
 
@@ -118,26 +118,35 @@ def process_document(
     session: SessionDep, current_user: CurrentUser, id: uuid.UUID
 ) -> Any:
     """
-    Read a text document and save its chunks.
+    Read a document and save its text chunks.
     """
     document = session.get(Document, id)
     if not document:
         raise HTTPException(status_code=404, detail="Document not found")
-
     if document.owner_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
-
-    if document.file_type not in {"text/plain", "text/markdown"}:
-        raise HTTPException(
-            status_code=400,
-            detail="Only TXT and Markdown processing is available now",
-        )
 
     file_path = BACKEND_DIR / document.storage_path
     if not file_path.is_file():
         raise HTTPException(status_code=404, detail="Stored file not found")
 
-    content = file_path.read_text(encoding="utf-8")
+    if document.file_type == "application/pdf":
+        try:
+            reader = PdfReader(file_path)
+            content = "\n".join(page.extract_text() or "" for page in reader.pages)
+        except Exception as error:
+            raise HTTPException(
+                status_code=400, detail="Could not read text from PDF"
+            ) from error
+    else:
+        try:
+            content = file_path.read_text(encoding="utf-8")
+        except UnicodeDecodeError as error:
+            raise HTTPException(
+                status_code=400,
+                detail="This text file is not UTF-8 encoded",
+            ) from error
+
     chunks = split_text(content)
     if not chunks:
         raise HTTPException(status_code=400, detail="Document is empty")
