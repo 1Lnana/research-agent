@@ -1,9 +1,11 @@
 import UploadDocument from "@/components/Documents/UploadDocument"
 import ProcessDocument from "@/components/Documents/ProcessDocument"
+import ViewDocumentChunks from "@/components/Documents/ViewDocumentChunks"
 import { useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { FileText } from "lucide-react"
 import { Suspense } from "react"
+
 
 import { DocumentsService } from "@/client"
 
@@ -48,6 +50,7 @@ function DocumentsListContent() {
             </p>
           </div>
           <ProcessDocument document={document} />
+          <ViewDocumentChunks document={document} />
         </div>
       ))}
     </div>
