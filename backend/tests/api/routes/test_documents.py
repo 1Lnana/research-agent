@@ -1,3 +1,4 @@
+import io
 import uuid
 from pathlib import Path
 
@@ -114,3 +115,76 @@ def test_delete_document_not_enough_permissions(
     assert db.get(Document,document_id) is not None
     assert db.get(DocumentChunk,chunk_id) is not None
     assert file_path.exists()
+
+def test_upload_document_rejects_unsupported_file_type(
+    client: TestClient, superuser_token_headers: dict[str, str]
+) -> None:
+    files = {
+        "file": (
+            "notes.docx",
+            io.BytesIO(b"not supported"),
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+    }
+
+    response = client.post(
+        f"{settings.API_V1_STR}/documents/",
+        headers=superuser_token_headers,
+        files=files,
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Only PDF, Markdown, and TXT files are supported"
+
+def test_upload_document_rejects_file_larger_than_limit(
+    client: TestClient, superuser_token_headers: dict[str, str]
+) -> None:
+        files = {
+            "file": (
+                "too-large.txt",
+                io.BytesIO(b"x" * (10 * 1024 * 1024 + 1)),
+                "text/plain",
+        )
+    }
+
+        response = client.post(
+        f"{settings.API_V1_STR}/documents/",
+        headers=superuser_token_headers,
+        files=files,
+    )
+
+        assert response.status_code == 400
+        assert response.json()["detail"] == "File must be 10 MB or smaller"
+
+def test_process_empty_document_returns_error(
+    client: TestClient, superuser_token_headers: dict[str, str]
+) -> None:
+    files = {
+        "file": (
+            "empty.txt",
+            io.BytesIO(b""),
+            "text/plain",
+        )
+    }
+
+    upload_response = client.post(
+        f"{settings.API_V1_STR}/documents/",
+        headers=superuser_token_headers,
+        files=files,
+    )
+    assert upload_response.status_code == 200
+    document_id = upload_response.json()["id"]
+
+    process_response = client.post(
+        f"{settings.API_V1_STR}/documents/{document_id}/process",
+        headers=superuser_token_headers,
+    )
+
+    assert process_response.status_code == 400
+    assert process_response.json()["detail"] == "Document is empty"
+
+    cleanup_response = client.delete(
+        f"{settings.API_V1_STR}/documents/{document_id}",
+        headers=superuser_token_headers,
+    )
+    assert cleanup_response.status_code == 200
