@@ -14,6 +14,8 @@ from tests.utils.utils import get_superuser_token_headers
 
 @pytest.fixture(scope="session", autouse=True)
 def db() -> Generator[Session]:
+    if settings.DATABASE_URL.path != "/app_test":
+        raise RuntimeError("Tests must use the app_test database")
     with Session(engine) as session:
         init_db(session)
         yield session
