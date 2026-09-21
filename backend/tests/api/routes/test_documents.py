@@ -188,3 +188,36 @@ def test_process_empty_document_returns_error(
         headers=superuser_token_headers,
     )
     assert cleanup_response.status_code == 200
+
+def test_process_document_returns_error_when_stored_file_is_missing(
+    client: TestClient,
+    superuser_token_headers: dict[str, str],
+    db: Session,
+) -> None:
+    owner = db.exec(
+        select(User).where(User.email == settings.FIRST_SUPERUSER)
+    ).one()
+
+    document = Document(
+        file_name="missing.txt",
+        file_type="text/plain",
+        file_size=10,
+        storage_path=str(
+            Path("uploads") / str(owner.id) / f"{uuid.uuid4()}.txt"
+        ),
+        owner_id=owner.id,
+    )
+    db.add(document)
+    db.commit()
+    db.refresh(document)
+
+    response = client.post(
+        f"{settings.API_V1_STR}/documents/{document.id}/process",
+        headers=superuser_token_headers,
+    )
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Stored file not found"
+
+    db.delete(document)
+    db.commit()
