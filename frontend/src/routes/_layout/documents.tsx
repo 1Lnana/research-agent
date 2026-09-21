@@ -1,3 +1,4 @@
+import DeleteDocument from "@/components/Documents/DeleteDocument"
 import UploadDocument from "@/components/Documents/UploadDocument"
 import ProcessDocument from "@/components/Documents/ProcessDocument"
 import ViewDocumentChunks from "@/components/Documents/ViewDocumentChunks"
@@ -51,6 +52,7 @@ function DocumentsListContent() {
           </div>
           <ProcessDocument document={document} />
           <ViewDocumentChunks document={document} />
+          <DeleteDocument document={document} />
         </div>
       ))}
     </div>

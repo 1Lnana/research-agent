@@ -1134,6 +1134,36 @@ export type documentsProcessDocumentResponses = {
 
 export type documentsProcessDocumentResponse = documentsProcessDocumentResponses[keyof documentsProcessDocumentResponses];
 
+export type documentsDeleteDocumentData = {
+    body?: never;
+    path: {
+        /**
+         * Id
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/documents/{id}';
+};
+
+export type documentsDeleteDocumentErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type documentsDeleteDocumentError = documentsDeleteDocumentErrors[keyof documentsDeleteDocumentErrors];
+
+export type documentsDeleteDocumentResponses = {
+    /**
+     * Successful Response
+     */
+    200: Message;
+};
+
+export type documentsDeleteDocumentResponse = documentsDeleteDocumentResponses[keyof documentsDeleteDocumentResponses];
+
 export type privateCreateUserData = {
     body: PrivateUserCreate;
     path?: never;

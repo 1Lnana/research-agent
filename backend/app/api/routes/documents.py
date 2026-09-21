@@ -3,6 +3,8 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, UploadFile
+from app.models import Message
+
 from sqlmodel import col, select
 
 from app.api.deps import CurrentUser, SessionDep
@@ -171,3 +173,29 @@ def process_document(
     session.commit()
     session.refresh(document)
     return document
+
+
+@router.delete("/{id}")
+def delete_document(
+    session: SessionDep, current_user: CurrentUser, id: uuid.UUID
+) -> Message:
+    """
+    Delete an document.
+    """
+    document = session.get(Document, id)
+    if  document is None:
+        raise HTTPException(status_code=404, detail="Document not found")
+    if document.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    file_path = BACKEND_DIR / document.storage_path
+    session.delete(document)
+    session.commit()
+
+    try:
+        file_path.unlink(missing_ok=True)
+    except OSError as error:
+        raise HTTPException(
+            status_code=500,
+            detail="Document a deleted, but stored file cleanup failed",
+        ) from error
+    return Message(message="Document deleted successfully")
