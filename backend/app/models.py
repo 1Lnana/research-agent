@@ -156,13 +156,17 @@ class DocumentChunk(SQLModel, table=True):
     )
     chunk_index: int = Field(ge=0)
     content: str = Field(sa_type=Text)
+    source_start: int | None = Field(default=None, ge=0)
+    source_end: int | None = Field(default=None, ge=0)
     document: Document | None = Relationship(back_populates="chunks")
 
 class DocumentChunkPublic(SQLModel):
     id: uuid.UUID
     document_id: uuid.UUID
     chunk_index: int
-    content: str    
+    content: str 
+    source_start: int | None = Field(default=None, ge=0)
+    source_end: int | None = Field(default=None, ge=0)   
 
 # Generic message
 class Message(SQLModel):

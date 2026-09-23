@@ -5,7 +5,7 @@ from pathlib import Path
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
 
-from app.api.routes.documents import BACKEND_DIR
+from app.api.routes.documents import BACKEND_DIR,split_text
 from app.core.config import settings
 from app.models import Document, DocumentChunk, User
 
@@ -221,3 +221,8 @@ def test_process_document_returns_error_when_stored_file_is_missing(
 
     db.delete(document)
     db.commit()
+
+def test_split_text_positions() -> None:
+     original = "  ABCDE"
+     chunks = split_text(original,chunk_size=3)
+     assert chunks == [("ABC",2,5),("DE",5,7)]

@@ -28,13 +28,19 @@ MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
 BACKEND_DIR = Path(__file__).resolve().parents[3]
 UPLOADS_DIR = BACKEND_DIR / "uploads"
 
-def split_text(content: str, chunk_size: int = 500) -> list[str]:
+def split_text(content: str, chunk_size: int = 500) -> list[tuple[str, int, int]]:
+    leading = len(content) - len(content.lstrip())
     text = content.strip()
-    return [
-        text[start : start + chunk_size]
-        for start in range(0, len(text), chunk_size)
-        if text[start : start + chunk_size].strip()
-    ]
+    chunks = []
+
+    for start in range(0, len(text), chunk_size):
+        piece = text[start : start + chunk_size]
+        if piece.strip():
+            source_start = leading + start
+            source_end = source_start + len(piece)
+            chunks.append((piece, source_start, source_end))
+
+    return chunks
 
 @router.get("/", response_model=DocumentsPublic)
 def read_documents(
@@ -159,12 +165,17 @@ def process_document(
     for chunk in existing_chunks:
         session.delete(chunk)
 
-    for index, chunk_content in enumerate(chunks):
+    for index, (chunk_content, source_start, source_end) in enumerate(chunks):
+        if document.file_type == "application/pdf":
+            source_start = None
+            source_end = None
         session.add(
             DocumentChunk(
                 document_id=document.id,
                 chunk_index=index,
                 content=chunk_content,
+                source_start=source_start,
+                source_end=source_end,
             )
         )
 

@@ -64,6 +64,14 @@ export type DocumentChunkPublic = {
      * Content
      */
     content: string;
+    /**
+     * Source Start
+     */
+    source_start?: number | null;
+    /**
+     * Source End
+     */
+    source_end?: number | null;
 };
 
 /**

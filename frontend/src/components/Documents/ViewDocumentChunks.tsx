@@ -57,6 +57,15 @@ const ViewDocumentChunks = ({ document }: ViewDocumentChunksProps) => {
                 <p className="mb-1 text-sm font-medium">
                   Chunk {chunk.chunk_index + 1}
                 </p>
+                {chunk.source_start != null && chunk.source_end != null ? (
+                  <p className="mb-2 text-xs text-muted-foreground">
+                    Characters {chunk.source_start}–{chunk.source_end} (end excluded)
+                  </p>
+                ) : (
+                  <p className="mb-2 text-xs text-muted-foreground">
+                    Source position unavailable
+                  </p>
+                )}
                 <p className="whitespace-pre-wrap text-sm">{chunk.content}</p>
               </div>
             ))}

@@ -1,5 +1,5 @@
 $ErrorActionPreference = "Stop"
-
+$previousDatabaseUrl = [Environment]::GetEnvironmentVariable("DATABASE_URL", "Process")
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $dbId = docker compose -f "$projectRoot\compose.yml" -f "$projectRoot\compose.override.yml" ps -q db
 
@@ -23,6 +23,13 @@ Push-Location "$projectRoot\backend"
 try {
     & "D:\Develop\uv\Scripts\uv.exe" run pytest @args
 }
-finally {
+ finally {
+    if ($null -eq $previousDatabaseUrl) {
+        Remove-Item Env:DATABASE_URL -ErrorAction SilentlyContinue
+    }
+    else {
+        $env:DATABASE_URL = $previousDatabaseUrl
+    }
     Pop-Location
 }
+
